@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import QRCode from "qrcode";
 
 export default function Home() {
-  const qrRef = useRef<HTMLDivElement>(null);
-  const qrInstance = useRef<any>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [url, setUrl] = useState("https://example.com");
   const [color, setColor] = useState("#000000");
-  const [ready, setReady] = useState(false);
 
   const colors = [
     { name: "Black", value: "#000000" },
@@ -16,66 +15,26 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    const load = async () => {
-      const QRCodeStyling = (await import("qr-code-styling")).default;
-
-      qrInstance.current = new QRCodeStyling({
-        width: 280,
-        height: 280,
-        data: url,
-        dotsOptions: {
-          color: color,
-          type: "dots",
-        },
-        cornersSquareOptions: {
-          color: color,
-          type: "extra-rounded",
-        },
-        cornersDotOptions: {
-          color: color,
-          type: "dot",
-        },
-        backgroundOptions: {
-          color: "transparent",
-        },
-        qrOptions: {
-          errorCorrectionLevel: "M",
-        },
-      });
-
-      if (qrRef.current) {
-        qrRef.current.innerHTML = "";
-        qrInstance.current.append(qrRef.current);
-      }
-      setReady(true);
-    };
-    load();
-  }, []);
-
-  useEffect(() => {
-    if (qrInstance.current && ready) {
-      qrInstance.current.update({
-        data: url || "https://example.com",
-        dotsOptions: { color: color, type: "dots" },
-        cornersSquareOptions: { color: color, type: "extra-rounded" },
-        cornersDotOptions: { color: color, type: "dot" },
-      });
-    }
-  }, [url, color, ready]);
+    if (!canvasRef.current) return;
+    QRCode.toCanvas(canvasRef.current, url || "https://example.com", {
+      width: 256,
+      margin: 1,
+      color: { dark: color, light: "#00000000" },
+      errorCorrectionLevel: "M",
+    });
+  }, [url, color]);
 
   const download = async () => {
-    const QRCodeStyling = (await import("qr-code-styling")).default;
-    const qr = new QRCodeStyling({
+    const dataUrl = await QRCode.toDataURL(url || "https://example.com", {
       width: 1024,
-      height: 1024,
-      data: url || "https://example.com",
-      dotsOptions: { color: color, type: "dots" },
-      cornersSquareOptions: { color: color, type: "extra-rounded" },
-      cornersDotOptions: { color: color, type: "dot" },
-      backgroundOptions: { color: "transparent" },
-      qrOptions: { errorCorrectionLevel: "M" },
+      margin: 1,
+      color: { dark: color, light: "#00000000" },
+      errorCorrectionLevel: "M",
     });
-    qr.download({ name: "qrcode", extension: "png" });
+    const link = document.createElement("a");
+    link.download = "qrcode.png";
+    link.href = dataUrl;
+    link.click();
   };
 
   return (
@@ -111,7 +70,7 @@ export default function Home() {
       </div>
 
       <div className="preview">
-        <div ref={qrRef} />
+        <canvas ref={canvasRef} />
       </div>
 
       <button onClick={download} className="download-btn">
