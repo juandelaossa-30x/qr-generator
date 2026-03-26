@@ -97,7 +97,7 @@ input[type="text"]:focus {
 .download-btn {
   width: 100%;
   padding: 0.875rem;
-  background: #10b981;
+  background: #0099FF;
   color: white;
   font-size: 1rem;
   font-weight: 500;
@@ -112,7 +112,7 @@ input[type="text"]:focus {
 }
 
 .download-btn:hover {
-  background: #059669;
+  background: #007acc;
 }
 
 .section {
